@@ -1,0 +1,323 @@
+iOS测试框架XCUITest
+
+
+一、XCUITest的基本的api
+XCUIApplication
+XCUIElement
+XCUIElementQuery
+
+
+二、常用基本操作
+1.点击某个按钮：app.buttons["登录"].tap()
+2.普通输入框输入文本：app.textFields["手机号"].typeText("13038865629")
+3.下拉刷新：app.swipeDown()
+4.滚动查看屏幕下方的内容，上拉加载更多：app.swipeUp()
+5.切换tab：app.tabBars.buttons["首页"].tap()
+6.让应用程序等待一会：sleep(3)
+7.判断元素是否存在：if app.buttons["确定"].exists{}
+8.使用断言来验证App界面的状态:XCTAssert（app.buttons["个人中心"].count == 1）
+9.使用正则匹配，操作列表元素（进阶）:使用：NSPredicate
+
+appium-iOS相关
+
+三、appium+iOSXCUITest自动化测试中，元素属性有哪几种？
+type、value、name、label、enable、visible等；
+
+四、appium+iOSXCUITest自动化测试中元素定位方式有哪几种？
+1、ios_predicate（最重要）
+2、accessbility_id
+3、class_name
+4、xpath
+
+五、iOS-predicate定位有哪几种？
+1、比较运算符；(>、<、==、!=)
+2、范围运算符；(in、between)
+3、字符串相关：contains\beginwith\endwith;
+4、通配符：like；
+5、正则表达式；
+6、多种属性结合定位；
+
+
+
+iOS+OC面试题：基础
+
+一、浅复制和深复制的区别？//浅拷贝和深拷贝
+答案：
+浅层复制（copy）：只复制指向对象的指针，而不复制引用对象本身。//通过对象的指针来访问这个对象
+深层复制（mutableCopy）：复制引用对象本身
+
+二、代理的作用？
+答案：代理的目的是改变或传递控制链。允许一个类在某些特定时刻通知到其他类，而不需要获取到那些类的指针。可以减少框架复杂度
+
+三、iOS中的可变类型与不可变类型，并举例
+答案：
+可变类型即可以动态修改，不可变即不可以动态修改；
+NSArray与NSMutableArray；
+NSDictionary与NSMutableDictionary；
+NSString与NSMutableString；
+
+四、什么是id类型
+id类型的变量可以存放任何数据类型的对象；(在内部处理上，这种类型被定义为指向对象的指针，实际上是一个指向这种对象的实例变量的指针。)
+例如：id number
+
+PageObject设计模式
+
+一、什么叫pageobject？
+PageObject就是页面对象，是Selenium自动化测试项目开发实践的最佳设计模式之一。
+
+二、pageobject原理
+将页面的元素定位和元素行为封装成一个page类， 实现页面对象和测试用例分离。
+
+三、PageObject分层：
+1、对象库层：对象层用于存放我们的页面元素和一些特殊控件操作
+2、逻辑层：逻辑层则是一些封装好的功能用例模块
+3、业务层：测试用例的操作；
+4、数据层：存放我们的测试数据；
+
+四、优点
+集中管理元素对象，便于应对元素的变化
+集中管理一个page内的公共方法，便于测试用例的编写
+后期维护方便，不需要重复的复制和修改代码
+
+
+
+Selenium
+
+1.怎么判断元素是否存在？
+
+判断元素是否存在和是否出现不同， 判断是否存在意味着如果这个元素压根就不存在， 就会抛出NoSuchElementException
+
+这样就可以使用try catch，如果catch到NoSuchElementException 就返回false。通常在项目中会把这个功能封装在isElementPresent方法中。
+
+2.如何判断元素是否出现？
+
+判断元素是否出现，存在两种情况，一种是该元素压根就没有，自然不会出现；另外一种是有这样的元素，但是是hidden状态
+
+可以通过先判断是否存在，如果不存在返回false；如果存在再去判断是否displayed。
+
+3.selenium中hidden或者是display ＝ none的元素是否可以定位到？
+
+不能，想点击的话，可以用js去掉dispalay=none的属性。
+
+4. selenium中如何保证操作元素的成功率？也就是说如何保证我点击的元素一定是可以点击的？
+
+1.通过封装find方法实现waitforEmelentPresent，这样在对元素进行操作之前保证元素被找到，进而提高成功率
+
+2.在对元素操作之前，比如click，如果该元素未display（非hidden），就需要先滚动到该元素，然后进行click操作;为啥使用滚动？ 因为如果页面没有完全显示，element如果是在下拉之后才能显示出来，只能先滚动到该元素才能进行click，否则是不能click操作
+
+1
+2
+3
+
+JavascriptExecutor js=(JavascriptExecutor)driver;
+        // roll down and keep the element to the center of browser
+        js.executeScript("arguments[0].scrollIntoViewIfNeeded(true);", download);
+
+3.不同方式进行定位，与expectedConditions判断方法封装，循环判断页面元素出现后再操作；
+
+4.开发人员规范开发习惯，如给页面元素加上唯一的name,id等。
+
+5. 如何去定位页面上动态加载的元素？
+
+    触发动态事件，然后findElemnt
+
+    如果是动态菜单，需要一级一级find（JS实现）
+
+6.如何去定位属性动态变化的元素？
+
+　 属性动态变化是指该element没有固定的属性值，所以只能通过相对位置定位
+
+    比如通过xpath的轴， parent／following－sibling／precent－sibling等
+
+    另外也可以尝试findbyelements遍历
+
+7.点击链接以后，selenium是否会自动等待该页面加载完毕？
+
+不会的。所以有的时候，当selenium并未加载完一个页面时再请求页面资源，则会误报不存在此元素。所以首先我们应该考虑判断，selenium是否加载完此页面。其次再通过函数查找该元素。
+
+8.自动化测试的时候是否需要连接数据库做数据校验？
+
+一般来说1、 UI自动化不需要（很少需要）；2、接口测试会需要：从数据库层面来进行数据校验可以更方便验证系统的数据处理方面是否正确；
+
+9.有几种元素常用定位方式，分别是？你最偏爱哪一种，为什么？
+
+8种：id、name、class name、tag name、link text、partial link text、xpath、css selector 偏爱哪一种？答：
+
+我最常用的是xpath（或CssSelector）因为很多情况下，html标签的属性不够规范，无法通过单一的属性定位，这个时候就只能使用xpath可以去重实现定位唯一element
+
+事实上定位最快的是Id，因为id是唯一的，然而大多数开发并没有设置id。
+
+10.怎么提高selenium脚本的自动化执行效率？
+
+1.优化测试用例，尽可不使用 sleep，减少使用ImplicitlyWait
+
+2.多使用selenium的WebDriverWait／FluentWait，这样可以优化等待时间
+
+3.减少不必要的操作步骤，如经过三四步才能打开我们要测试的页面的话，我们就可以直接通过网址来打开，减少不必要的操作。
+
+4.中断页面加载，如果页面加载的内容过多，我们可以查看一下加载慢的原因，如果加载的内容不影响我们测试，就设置超时时间，中断页面加载。
+
+5.使用性能好的电脑
+
+11.用例在运行过程中经常会出现不稳定的情况，也就是这次可以通过，下次无法通过了，如何提高用例的稳定性？
+
+1，查找元素前先做判断：ExpectedConditions里面的各种方法；
+2，显式等待：多使用WebDriverWait，加上显式等待时间，等要操作的元素出现之后再执行下面的操作；
+3、多用try catch捕获异常；
+4，多线程的时候，减少测试用例耦合度，因为多线程的执行顺序是不受控制的；
+5，尽量使用测试专用环境，避免其他类型的测试同时进行，对数据造成干扰。
+
+12.你的自动化用例的执行策略是什么？
+
+1.自动化测试用例是用来监控的。集成到jenkins，创建定时任务定时执行；
+2.有些用例在产品上线前必须回归。jenkins上将任务绑定到开发的build任务上，触发执行；
+3.有些用例不需要经常执行。jenkins创建一个任务，需要执行的时候人工构建即可。
+
+13.什么是持续集成？
+
+频繁的将代码集成到主干，持续性的进行项目的构架，以便能能够快速发现错误，防止分支大幅度偏离主干。
+
+14.webdriver client的原理是什么？
+
+在selenium启动以后，driver充当了服务器的角色，跟client和浏览器通信，client根据webdriver协议发送请求给driver。driver解析请求，并在浏览器上执行相应的操作，并把执行结果返回给client.
+
+具体的工作流程：
+
+webDriver打开浏览器并绑定到指定端口。启动的浏览器作为远程服务器remote server
+client通过CommandExecuter发送http请求给远程服务器的侦听端口（the wire protocal）
+远程服务器根据原生的浏览器组件来转化为浏览器的本地（native）调用
+
+
+15. 如何设计高质量自动化脚本
+
+1. 使用四层结构实现业务逻辑、脚本、数据分离。
+
+2. 使用PO设计模式，将一个页面用到的元素和操作步骤封装在一个页面类中。如果一个元素定位发生了改变，我们只用修改这个页面的元素属性。
+
+3. 对于页面类的方法，我们尽量从客户的正向逻辑去分析，方法中是一个独立场景，例如：登录到退出，而且不要想着把所有的步骤都封装在一个方法中。
+
+4. 测试用例设计中，减少测试用例之间的耦合度。
+
+16. Selenium有几种定位方式？你最偏爱哪一种，为什么？
+
+Selenium有八种定位方式：
+
+与name有关的有三种：name、class_name、tag_name
+
+与link相关的有两种：link_text、partitial_link_text
+
+与id有关：id
+
+全能选手：xpath、css_selector
+
+如果存在id，我一定使用Id，因为简单方便，定位最快。其次是Xpath，因为很多情况下html标签的属性不够规范，无法唯一定位。Xpath是通过相对位置定位
+
+17、Xpath定位
+
+
+
+1）通过属性定位元素
+
+find_element_by_xpath("//标签名[@属性='属性值']")
+
+2）通过标签名
+
+driver.find_elment_by_xpath('//input')
+
+3）父子定位元素
+
+查找有父亲元素的标签名为span，它的所有标签名叫input的子元素
+
+driver.find_element_by_xpath("//span/input")
+
+4）通过元素内容
+
+# 根据text() driver.find_elment_by_xpath('//p[contains(text(), '京公网')]')
+
+# 根据class driver.find_elment_By_xpath('//p[contains(@class, '京公网')]')
+
+5） 组合定位元素
+
+//父元素标签名/标签名的属性值：指的是span下的input标签下class属性为s_ipt的元素；
+
+
+
+driver.find_element_by_xpath("//span/input[@class='s_ipt']")
+
+6） 多个属性组合定位
+
+指的是input标签下id属性为kw且name属性为wd的元素
+
+driver.find_element_by_xpath("//input[@class='s_ipt' and @name='wd']")
+
+常用Linux指令：
+创建和删除，重命名，复制文件的命令
+
+Touch：创建一个新的文件
+
+Vi:创建一个新的文件
+
+Rm：删除文件或目录
+
+Mv：重命名或移动文件的命令
+
+Cp：复制命令
+
+Scp：用于将本地的文件或目录复制到远程服务器
+
+Wget：用于下载ftp或http服务器文件到本地。
+
+查看进程：ps -a | grep "weixin"
+
+查看被占用端口的进程：lsof -i:8080
+
+Cat：用于显示指定文件的全部内容
+
+More：用分页的形式显示指定文件的内容
+Less：用分页的形式显示指定文件的内容，区别是more和less翻页使用的操作键不同。
+
+Head：用于显示文件的前n行内容。
+
+Tail：用于显示文件的后n行内容。
+
+Tail -f：用于自动刷新的显示文件后n行数据内容。
+
+MySql基础操作
+增：insert into 表 (列名,列名...) values (值,值,...)
+
+删：delete from 表 where id＝1 and name＝'zhangyanlin'
+
+改：update 表 set name ＝ 'zhangyanlin' where id>14
+查：select * from 表 where id > 1
+添加列： alter table 表名 add 列名 类型 
+删除列： alter table 表名 drop column 列名 
+修改列： alter table 表名 modify column 列名 类型; -- 类型
+分组：select num from 表 group by num
+
+排序：select num,nid from 表 where nid > 10 group by num,nid order by nid desc
+
+网络相关
+计算机网络体系结构：
+
+7层：由上往下为：应用层、表示层、会话层、传输层、网络层、数据链路层、物理层；
+
+在浏览器中输入www.baidu.com后执行的全部过程
+
+浏览器获取输入的域名www.baidu.com
+浏览器向域名系统DNS请求解析www.baidu.com的IP地址
+DNS解析出百度服务器的IP地址
+浏览器与服务器建立TCP连接（默认端口80）
+浏览器发出HTTP请求，请求百度首页
+服务器通过HTTP请求把首页文件发给浏览器
+TCP连接释放
+浏览器解析首页文件，展示web界面
+TCP/IP协议（在传输层）
+
+TCP／IP模型由四层结构组成：网络接口层、网际层、传输层、应用层，每层分别具有不同的协议和功能
+
+http与https区别
+
+http：以明文方式发送内容，不提供任何方式的数据加密，port=80
+
+https：在http基础上多了SSL协议，了，相当于多次了次 握手：客户端产生一个对称密钥，服务器端通过证书来交换密钥，port=443；
+
